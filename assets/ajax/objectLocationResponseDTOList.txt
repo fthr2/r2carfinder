@@ -1,0 +1,57 @@
+[{
+		"id": 1111,
+		"objectBoxGuid": "1111",
+		"objectName": "1111",
+		"objectAddres": "1111",
+		"objectGuid": "1111",
+		"objectLatitude": 11.11,
+		"objectLongitude": 11.11,
+		"objectMeter": 1111,
+		"objectCode": "1111",
+		"objectType": 1111,
+		"objectFirstRecordDateTime": "",
+		"objectLastRecordDateTime": ""
+	},
+	{
+		"id": 2222,
+		"objectBoxGuid": "2222",
+		"objectName": "2222",
+		"objectAddres": "2222",
+		"objectGuid": "2222",
+		"objectLatitude": 22.22,
+		"objectLongitude": 22.22,
+		"objectMeter": 2222,
+		"objectCode": "2222",
+		"objectType": 2222,
+		"objectFirstRecordDateTime": "",
+		"objectLastRecordDateTime": ""
+	},
+	{
+		"id": 3333,
+		"objectBoxGuid": "3333",
+		"objectName": "3333",
+		"objectAddres": "3333",
+		"objectGuid": "3333",
+		"objectLatitude": 33.33,
+		"objectLongitude": 33.33,
+		"objectMeter": 3333,
+		"objectCode": "3333",
+		"objectType": 3333,
+		"objectFirstRecordDateTime": "",
+		"objectLastRecordDateTime": ""
+	},
+	{
+		"id": 4444,
+		"objectBoxGuid": "4444",
+		"objectName": "4444",
+		"objectAddres": "4444",
+		"objectGuid": "4444",
+		"objectLatitude": 44.44,
+		"objectLongitude": 44.44,
+		"objectMeter": 4444,
+		"objectCode": "4444",
+		"objectType": 4444,
+		"objectFirstRecordDateTime": "",
+		"objectLastRecordDateTime": ""
+	}
+]
