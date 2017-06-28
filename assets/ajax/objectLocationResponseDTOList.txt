@@ -1,57 +1,69 @@
-[{
-		"id": 1111,
-		"objectBoxGuid": "1111",
-		"objectName": "1111",
-		"objectAddres": "1111",
-		"objectGuid": "1111",
-		"objectLatitude": 11.11,
-		"objectLongitude": 11.11,
-		"objectMeter": 1111,
-		"objectCode": "1111",
-		"objectType": 1111,
-		"objectFirstRecordDateTime": "",
-		"objectLastRecordDateTime": ""
-	},
-	{
-		"id": 2222,
-		"objectBoxGuid": "2222",
-		"objectName": "2222",
-		"objectAddres": "2222",
-		"objectGuid": "2222",
-		"objectLatitude": 22.22,
-		"objectLongitude": 22.22,
-		"objectMeter": 2222,
-		"objectCode": "2222",
-		"objectType": 2222,
-		"objectFirstRecordDateTime": "",
-		"objectLastRecordDateTime": ""
-	},
-	{
-		"id": 3333,
-		"objectBoxGuid": "3333",
-		"objectName": "3333",
-		"objectAddres": "3333",
-		"objectGuid": "3333",
-		"objectLatitude": 33.33,
-		"objectLongitude": 33.33,
-		"objectMeter": 3333,
-		"objectCode": "3333",
-		"objectType": 3333,
-		"objectFirstRecordDateTime": "",
-		"objectLastRecordDateTime": ""
-	},
-	{
-		"id": 4444,
-		"objectBoxGuid": "4444",
-		"objectName": "4444",
-		"objectAddres": "4444",
-		"objectGuid": "4444",
-		"objectLatitude": 44.44,
-		"objectLongitude": 44.44,
-		"objectMeter": 4444,
-		"objectCode": "4444",
-		"objectType": 4444,
-		"objectFirstRecordDateTime": "",
-		"objectLastRecordDateTime": ""
-	}
-]
+{
+    "objectLocationResponseDTOS": [
+        {
+            "id": 2,
+            "objectGuid": "f15ede6f-0339-45ea-8435-dd848b5968b7",
+            "objectLatitude": 39.88,
+            "objectLongitude": 32.759,
+            "objectMeter": 0,
+            "objectCode": "car1",
+            "objectType": 3,
+            "objectFirstRecordDateTime": "Jun 24, 2017 3:00:47 PM",
+            "objectLastRecordDateTime": "Jun 24, 2017 6:27:13 PM",
+            "hasError": false,
+            "message": []
+        },
+        {
+            "id": 3,
+            "objectGuid": "3460c244-cfdf-4fd1-916a-1dc2fe8aab95",
+            "objectLatitude": 39.87417196529773,
+            "objectLongitude": 32.64708336442709,
+            "objectMeter": 0,
+            "objectCode": "chasis1",
+            "objectType": 4,
+            "objectFirstRecordDateTime": "Jun 26, 2017 7:10:58 PM",
+            "objectLastRecordDateTime": "Jun 26, 2017 7:32:23 PM",
+            "hasError": false,
+            "message": []
+        },
+        {
+            "id": 4,
+            "objectGuid": "e2c56db5-dffb-48d2-b060-d0f5a71096e0",
+            "objectLatitude": 0,
+            "objectLongitude": 0,
+            "objectMeter": 0,
+            "objectCode": "car8",
+            "objectType": 2,
+            "objectFirstRecordDateTime": "Jun 27, 2017 1:36:23 PM",
+            "objectLastRecordDateTime": "Jun 27, 2017 1:37:24 PM",
+            "hasError": false,
+            "message": []
+        },
+        {
+            "id": 5,
+            "objectGuid": "fda50693-a4e2-4fb1-afcf-c6eb07647825",
+            "objectLatitude": 0,
+            "objectLongitude": 0,
+            "objectMeter": 0,
+            "objectType": 2,
+            "objectFirstRecordDateTime": "Jun 28, 2017 5:04:10 PM",
+            "objectLastRecordDateTime": "Jun 28, 2017 5:06:12 PM",
+            "hasError": false,
+            "message": []
+        },
+        {
+            "id": 6,
+            "objectGuid": "b9407f30-f5f8-466e-aff9-25556b57fe6d",
+            "objectLatitude": 0,
+            "objectLongitude": 0,
+            "objectMeter": 0,
+            "objectType": 2,
+            "objectFirstRecordDateTime": "Jun 28, 2017 7:13:10 PM",
+            "objectLastRecordDateTime": "Jun 28, 2017 7:30:22 PM",
+            "hasError": false,
+            "message": []
+        }
+    ],
+    "hasError": false,
+    "message": []
+}

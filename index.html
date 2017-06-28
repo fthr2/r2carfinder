@@ -135,6 +135,8 @@
         var selectediconStyle;
         var refreshIntervalId;
         var editor;
+        var baseDto;
+
         function applyMargins() {
             var leftToggler = $(".mini-submenu-left");
             var rightToggler = $(".mini-submenu-right");
@@ -326,9 +328,6 @@
                     selectedBoxOnMap = null;
                     emptyBoxDetailsToPane();
                 });
-
-                getCars();
-                getBoxes();
             });
 
         });
@@ -354,19 +353,15 @@
             map.addInteraction(selectOnMap);
         }
 
-        var baseDto = {
-            "userEMail": "admin@admin.com",
-            "userPassword": "123123",
-            "appCode": 2,
-            "appVersion": 1,
-            "lngCode": "tr"
-        };
-
         function getBoxes() {
             $.ajax({
-                type: "GET",
-                url: "assets/ajax/BoxResponseDTOList.txt",
+                //type: "GET",
+                type: "POST",
+                //  url: "assets/ajax/BoxResponseDTOList.txt",
+                url: "http://52.59.226.101:8080/lkl/getAllBox",
+                contentType: "application/json",
                 data: JSON.stringify(baseDto),
+                dataType: 'json',
                 success: function (data) {
                     addBoxToDatatable(data);
                 }
@@ -374,7 +369,8 @@
         }
 
         function addBoxToDatatable(data) {
-            let jsonData = JSON.parse(data);
+            //let jsonData = JSON.parse(data);
+            let jsonData = data.getBoxResponseDTOS;
             for (i = 0; i < jsonData.length; i++) {
                 let temp = jsonData[i];
                 let arry = [temp.boxGuid, temp.boxLat, temp.boxLong];
@@ -398,17 +394,23 @@
 
         function getCars() {
             $.ajax({
-                type: "GET",
-                url: "assets/ajax/objectLocationResponseDTOList.txt",
+                type: "POST",
+                //  type: "GET",
+                //  url: "assets/ajax/objectLocationResponseDTOList.txt",
+                url: "http://52.59.226.101:8080/lkl/getAllObjectLocation",
+                contentType: "application/json",
                 data: JSON.stringify(baseDto),
+                dataType: 'json',
                 success: function (data) {
+
                     addCarsToDatatable(data);
                 }
             });
         }
 
         function addCarsToDatatable(data) {
-            let jsonData = JSON.parse(data);
+            //let jsonData = JSON.parse(data).objectLocationResponseDTOS;
+            let jsonData = data.objectLocationResponseDTOS;
             for (i = 0; i < jsonData.length; i++) {
                 let temp = jsonData[i];
                 addCarToDatatable(temp);
@@ -416,9 +418,14 @@
         }
 
         function addCarToDatatable(temp) {
-            let arry = [temp.objectCode, temp.objectLatitude, temp.objectLongitude];
-            carTable.row.add(arry).draw(false);
-            addCarToMap(temp);
+            if (temp.objectCode){
+                let arry = [temp.objectCode, temp.objectLatitude, temp.objectLongitude];
+                carTable.row.add(arry).draw(false);
+                addCarToMap(temp);
+            }
+            else {
+                console.log("objectCode olmayan arac mevcut guid: " + temp.objectGuid);
+            }
         }
 
         function addCarToMap(obj) {
@@ -491,8 +498,8 @@
 
         function refreshLists(){
             source.clear();
-            carTable.clear().draw();;
-            boxTable.clear().draw();;
+            carTable.clear().draw();
+            boxTable.clear().draw();
             selectedCar = null;
             selectedCarOnMap = null;
             selectedBox = null;
@@ -509,7 +516,7 @@
 
         function hookToCar(){
             isHookedToCar = true;
-            let inputCode = $('#searchTxt').val('');
+            let inputCode = $('#searchTxt').val();
             refreshIntervalId = setInterval(function(){
                 getCarByCode(inputCode);
             }, 3000);
@@ -527,7 +534,8 @@
                 cancelHook();
                 return;
             }
-
+            console.log(item);
+console.log(item);
             let mapItem = getMapFeatureById(item.objectCode);
             if (mapItem){ // update
                 mapItem.getGeometry().setCoordinates(ol.proj.transform([item.objectLongitude, item.objectLatitude], 'EPSG:4326', 'EPSG:3857'));
@@ -553,13 +561,93 @@
         }
 
         function getCarByCode(carCode){
+          let carcodedto = baseDto;
+          carcodedto["objectCode"] = carCode;
             $.ajax({
-                type: "GET",
-                url: "assets/ajax/carByCode.txt", // ?carcode = carCode
-                data: JSON.stringify(baseDto),
+                //  type: "GET",
+                type: "POST",
+                //  url: "assets/ajax/carByCode.txt", // ?carcode = carCode
+                url: "http://52.59.226.101:8080/lkl/getObjectLocation", // ?carcode = carCode
+                data: JSON.stringify(carcodedto),
+                contentType: "application/json",
                 success: function (data) {
-                    let jsonData = JSON.parse(data);
+                    //let jsonData = JSON.parse(data);
+                    if(data.message && data.message.length > 0){
+                        for (var i = 0; i < data.message.length; i++) {
+                            alert(data.message[i]);
+                        }
+
+                        cancelHook();
+                        return;
+                    }
+
+                    let jsonData = data;
                     addOrUpdateMapFeature(jsonData);
+                }
+            });
+        }
+
+        function signOut(){
+          baseDto = {};
+          $("#sout").hide();
+          $("#sin").show();
+          cancelHook();
+           $('#emailTxt').val('');
+           $('#pwdTxt').val('');
+           source.clear();
+           carTable.clear().draw();
+           boxTable.clear().draw();
+           selectedCar = null;
+           selectedCarOnMap = null;
+           selectedBox = null;
+           selectedBoxOnMap = null;
+           emptyBoxDetailsToPane();
+
+        }
+
+        function signIn(){
+            let email = $('#emailTxt').val();
+            let pwd  = $('#pwdTxt').val();
+
+            let dto = {
+                "userEMail":email,
+                "userPassword": pwd,
+                "appCode" :1,
+                "appVersion" : 1.1,
+                "lngCode" :"tr"
+            };
+
+
+            $.ajax({
+                //  type: "GET",
+                type: "POST",
+                //  url: "assets/ajax/carByCode.txt", // ?carcode = carCode
+                url: "http://52.59.226.101:8080/lkl/getUser", // ?carcode = carCode
+                data: JSON.stringify(dto),
+                contentType: "application/json",
+                success: function (data) {
+                    //let jsonData = JSON.parse(data);
+                    if(data.message && data.message[0] != "Başarılı."){
+                        for (var i = 0; i < data.message.length; i++) {
+                            alert(data.message[i]);
+                        }
+
+                        return;
+                    }
+                    else {
+                      $("#sout").show();
+                      $("#sin").hide();
+                        baseDto  = {
+                            "userEMail":email,
+                            "userPassword":pwd,
+                            "appCode" :3,
+                            "appVersion" : 1.1,
+                            "lngCode" :"tr"
+                        };
+
+                        getCars();
+                        getBoxes();
+                    }
                 }
             });
         }
@@ -578,17 +666,22 @@
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <form class="navbar-form navbar-left" role="search">
                     <div class="form-group">
-                        <input type="text" id="searchTxt" onclick="hookToCar()" class="form-control" placeholder="Search">
+                        <input type="email" id="searchTxt" class="form-control" placeholder="Search">
                     </div>
-                    <button type="submit" class="btn btn-default">Submit</button>
+                    <button type="button" class="btn btn-default" onclick="hookToCar()">Submit</button>
                 </form>
                 <ul class="nav navbar-nav navbar-right">
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Settings <b class="caret"></b></a>
                         <ul class="dropdown-menu">
-                            <li><a href="#">Log In</a></li>
+                            <li id="sin"><a data-toggle="modal" data-target="#myModal" style="cursor: pointer;">Sign In</a></li>
+
+                            <!--  <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">
+                                Launch demo modal
+                              </button>-->
+
                             <li class="divider"></li>
-                            <li><a href="#">Log Out</a></li>
+                            <li id="sout" style="display:none;" onclick="signOut()"><a href="#">Sign Out</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -709,11 +802,11 @@
                             </div>
                             <div class="form-group">
                                 <label for="objectLatitude">Latitude</label>
-                                <input type="email" class="form-control" id="objectLatitude">
+                                <input type="text" class="form-control" id="objectLatitude">
                             </div>
                             <div class="form-group">
                                 <label for="objectLongitude">Longitude</label>
-                                <input type="tel" class="form-control" id="objectLongitude">
+                                <input type="text" class="form-control" id="objectLongitude">
                             </div>
                             <div class="form-group form-inline">
                                 <button onclick="zoomToSelectedItem()" type="zoom" class="btn btn-default">Zoom</button>
@@ -734,6 +827,37 @@
 <div class="mini-submenu mini-submenu-right pull-right">
     <i class="fa fa-tasks"></i>
 </div>
+</div>
+
+<!-- Button trigger modal -->
+
+
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">Sign In</h4>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label for="email">Email address:</label>
+                        <input type="email" class="form-control" id="emailTxt">
+                    </div>
+                    <div class="form-group">
+                        <label for="pwd">Password:</label>
+                        <input type="password" class="form-control" id="pwdTxt">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="signIn()" data-dismiss="modal">Sign In</button>
+            </div>
+        </div>
+    </div>
 </div>
 </body>
 </html>
