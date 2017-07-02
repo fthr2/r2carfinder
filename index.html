@@ -137,6 +137,7 @@
         var refreshIntervalId;
         var editor;
         var baseDto;
+        var isCarListSelected= true;
 
         function applyMargins() {
             var leftToggler = $(".mini-submenu-left");
@@ -256,6 +257,14 @@
             $(document).ready(function () {
                 $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
                     $.fn.dataTable.tables({visible: true, api: true}).columns.adjust();
+
+                    if (e.target.toString().indexOf('#1a') > 0){
+                        isCarListSelected = true;
+                    }
+                    else {
+                        isCarListSelected = false;
+                    }
+
                 });
 
                 carTable = $('#carTable').DataTable({
@@ -465,14 +474,14 @@
             if (obj && obj.length > 0) {
                 let itemOnMap = getMapFeatureById(obj[0]);
                 if(!itemOnMap){
-                  let temp = {
-                    objectCode:obj[0],
-                    objectLatitude:obj[1],
-                    objectLongitude:obj[2]
-                  };
+                    let temp = {
+                        objectCode:obj[0],
+                        objectLatitude:obj[1],
+                        objectLongitude:obj[2]
+                    };
 
-                  addCarToMap(temp);
-                  itemOnMap = getMapFeatureById(obj[0]);
+                    addCarToMap(temp);
+                    itemOnMap = getMapFeatureById(obj[0]);
                 }
 
                 selectOnMap.getFeatures().push(itemOnMap);
@@ -488,14 +497,14 @@
             if (obj && obj.length > 0) {
                 let itemOnMap = getMapFeatureById(obj[0]);
                 if(!itemOnMap){
-                  let temp = {
-                    boxGuid:obj[0],
-                    boxLat:obj[1],
-                    boxLong:obj[2]
-                  };
+                    let temp = {
+                        boxGuid:obj[0],
+                        boxLat:obj[1],
+                        boxLong:obj[2]
+                    };
 
-                  addBoxToMap(temp);
-                  itemOnMap = getMapFeatureById(obj[0]);
+                    addBoxToMap(temp);
+                    itemOnMap = getMapFeatureById(obj[0]);
                 }
 
                 selectOnMap.getFeatures().push(itemOnMap);
@@ -524,52 +533,85 @@
         }
 
         function refreshLists(){
-            source.clear();
-            carTable.clear().draw();
-            boxTable.clear().draw();
-            selectedCar = null;
-            selectedCarOnMap = null;
+
+          if(isCarListSelected){
+              selectedCar = null;
+              selectedCarOnMap = null;
+              carTable.clear().draw();
+              getCars();
+              let itemList = carTable.rows().data();
+              for (var i = 0; i < itemList.length; i++) {
+                  let foundItem = getMapFeatureById(itemList[i][0]);
+                  vector.getSource().removeFeature(foundItem);
+              }
+              
+              if(selectOnMap.getFeatures()){
+                  while (selectOnMap.getFeatures()) {
+                      selectOnMap.getFeatures().pop();
+                  }
+              }
+
+          }
+          else {
             selectedBox = null;
             selectedBoxOnMap = null;
-            getCars();
+              boxTable.clear().draw();
             getBoxes();
-            while (selectOnMap.getFeatures()) {
-                selectOnMap.getFeatures().pop();
-              }
+            let itemList = boxTable.rows().data();
+            for (var i = 0; i < itemList.length; i++) {
+                let foundItem = getMapFeatureById(itemList[i][0]);
+                vector.getSource().removeFeature(foundItem);
+            }
+            if(selectOnMap.getFeatures()){
+                while (selectOnMap.getFeatures()) {
+                    selectOnMap.getFeatures().pop();
+                }
+            }
+          }
         }
 
         function showAll(){
-          selectedCar = null;
-          selectedCarOnMap = null;
-          selectedBox = null;
-          selectedBoxOnMap = null;
-          source.clear();
-          let itemList = carTable.rows().data();
-          for (var i = 0; i < itemList.length; i++) {
-              let temp = {
-                objectCode:itemList[i][0],
-                objectLatitude:itemList[i][1],
-                objectLongitude:itemList[i][2]
-              };
 
-              addCarToMap(temp);
-          }
+            if(isCarListSelected){
+                selectedCar = null;
+                selectedCarOnMap = null;
+                let itemList = carTable.rows().data();
+                for (var i = 0; i < itemList.length; i++) {
+                    var foundItem = getMapFeatureById(itemList[i][0]);
+                    if(!foundItem){
+                        let temp = {
+                            objectCode:itemList[i][0],
+                            objectLatitude:itemList[i][1],
+                            objectLongitude:itemList[i][2]
+                        };
 
-          itemList = boxTable.rows().data();
-          for (var i = 0; i < itemList.length; i++) {
-              let temp = {
-                objectCode:itemList[i][0],
-                objectLatitude:itemList[i][1],
-                objectLongitude:itemList[i][2]
-              };
+                        addCarToMap(temp);
+                    }
+                }
+            }
+            else {
+                selectedBox = null;
+                selectedBoxOnMap = null;
+                itemList = boxTable.rows().data();
+                for (var i = 0; i < itemList.length; i++) {
+                    var foundItem = getMapFeatureById(itemList[i][0]);
+                    if(!foundItem){
+                        let temp = {
+                            boxGuid:itemList[i][0],
+                            boxLat:itemList[i][1],
+                            boxLong:itemList[i][2]
+                        };
 
-              addBoxToMap(temp);
-          }
-
-          while (selectOnMap.getFeatures()) {
-              selectOnMap.getFeatures().pop();
+                        addBoxToMap(temp);
+                    }
+                }
             }
 
+            if(selectOnMap.getFeatures()){
+                while (selectOnMap.getFeatures()) {
+                    selectOnMap.getFeatures().pop();
+                }
+            }
         }
 
         // 29.06901,40.2608250 for fiat bursa
@@ -579,10 +621,10 @@
         }
 
         function hookToCar(){
-          if (!isUserAuthenticated){
-            alert("Lütfen giriş yapınız.");
-            return;
-          }
+            if (!isUserAuthenticated){
+                alert("Lütfen giriş yapınız.");
+                return;
+            }
 
             cancelHook();
             isHookedToCar = true;
@@ -631,8 +673,8 @@
         }
 
         function getCarByCode(carCode){
-          let carcodedto = baseDto;
-          carcodedto["objectCode"] = carCode;
+            let carcodedto = baseDto;
+            carcodedto["objectCode"] = carCode;
             $.ajax({
                 //  type: "GET",
                 type: "POST",
@@ -658,22 +700,27 @@
         }
 
         function signOut(){
-          baseDto = {};
-          $("#sout").hide();
-          $("#sin").show();
-          cancelHook();
-           $('#emailTxt').val('');
-           $('#pwdTxt').val('');
-           source.clear();
-           carTable.clear().draw();
-           boxTable.clear().draw();
-           selectedCar = null;
-           selectedCarOnMap = null;
-           selectedBox = null;
-           selectedBoxOnMap = null;
-           emptyBoxDetailsToPane();
-           isUserAuthenticated = false;
-           deactiveUserInterfaces();
+            baseDto = {};
+            $("#sout").hide();
+            $("#sin").show();
+            cancelHook();
+            $('#emailTxt').val('');
+            $('#pwdTxt').val('');
+            source.clear();
+            carTable.clear().draw();
+            boxTable.clear().draw();
+            selectedCar = null;
+            selectedCarOnMap = null;
+            selectedBox = null;
+            selectedBoxOnMap = null;
+            emptyBoxDetailsToPane();
+            isUserAuthenticated = false;
+            deactiveUserInterfaces();
+            if(selectOnMap.getFeatures()){
+                while (selectOnMap.getFeatures()) {
+                    selectOnMap.getFeatures().pop();
+                }
+            }
         }
 
         function signIn(){
@@ -706,8 +753,8 @@
                         return;
                     }
                     else {
-                      $("#sout").show();
-                      $("#sin").hide();
+                        $("#sout").show();
+                        $("#sin").hide();
                         baseDto  = {
                             "userEMail":email,
                             "userPassword":pwd,
@@ -727,17 +774,17 @@
         }
 
         function activeUserInterfaces(){
-          $("#objectListPane").show();
-          applyMargins();
-          $("#leftPaneOpener").show();
-          $('.mini-submenu-left').fadeOut();
+            $("#objectListPane").show();
+            applyMargins();
+            $("#leftPaneOpener").show();
+            $('.mini-submenu-left').fadeOut();
         }
 
         function deactiveUserInterfaces(){
-          $('.mini-submenu-left').fadeIn();
-          $("#objectListPane").hide();
-          applyMargins();
-          $("#leftPaneOpener").hide();
+            $('.mini-submenu-left').fadeIn();
+            $("#objectListPane").hide();
+            applyMargins();
+            $("#leftPaneOpener").hide();
         }
 
     </script>
@@ -827,7 +874,7 @@
                 </div>
                 <div id="properties" class="panel-collapse collapse in">
                     <div class="panel-body">
-                        <ul class="nav nav-tabs">
+                        <ul class="nav nav-tabs"  id="tabmenus">
                             <li class="active"><a href="#1a" data-toggle="tab">Car List</a></li>
                             <li><a href="#2a" data-toggle="tab">Box List</a></li>
                         </ul>
