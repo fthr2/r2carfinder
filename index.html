@@ -119,6 +119,7 @@
 
     <script type="text/javascript">
         var isHookedToCar = false;
+        var isUserAuthenticated = false;
         var source;
         var map;
         var draw;
@@ -330,6 +331,7 @@
                 });
             });
 
+            deactiveUserInterfaces();
         });
 
         <!-- ol -->
@@ -375,7 +377,7 @@
                 let temp = jsonData[i];
                 let arry = [temp.boxGuid, temp.boxLat, temp.boxLong];
                 boxTable.row.add(arry).draw(false);
-                addBoxToMap(temp);
+                //addBoxToMap(temp);
             }
         }
 
@@ -421,7 +423,7 @@
             if (temp.objectCode){
                 let arry = [temp.objectCode, temp.objectLatitude, temp.objectLongitude];
                 carTable.row.add(arry).draw(false);
-                addCarToMap(temp);
+                //addCarToMap(temp);
             }
             else {
                 console.log("objectCode olmayan arac mevcut guid: " + temp.objectGuid);
@@ -462,8 +464,21 @@
             selectedCarOnMap = null;
             if (obj && obj.length > 0) {
                 let itemOnMap = getMapFeatureById(obj[0]);
+                if(!itemOnMap){
+                  let temp = {
+                    objectCode:obj[0],
+                    objectLatitude:obj[1],
+                    objectLongitude:obj[2]
+                  };
+
+                  addCarToMap(temp);
+                  itemOnMap = getMapFeatureById(obj[0]);
+                }
+
                 selectOnMap.getFeatures().push(itemOnMap);
                 selectedCarOnMap = itemOnMap;
+                //console.log(itemOnMap);
+                recenterMap(itemOnMap.attributes.objectLongitude, itemOnMap.attributes.objectLatitude);
             }
         }
 
@@ -472,8 +487,20 @@
             selectedBoxOnMap = null;
             if (obj && obj.length > 0) {
                 let itemOnMap = getMapFeatureById(obj[0]);
+                if(!itemOnMap){
+                  let temp = {
+                    boxGuid:obj[0],
+                    boxLat:obj[1],
+                    boxLong:obj[2]
+                  };
+
+                  addBoxToMap(temp);
+                  itemOnMap = getMapFeatureById(obj[0]);
+                }
+
                 selectOnMap.getFeatures().push(itemOnMap);
                 selectedBoxOnMap = itemOnMap;
+                recenterMap(obj[2], obj[1]);
             }
         }
 
@@ -506,6 +533,43 @@
             selectedBoxOnMap = null;
             getCars();
             getBoxes();
+            while (selectOnMap.getFeatures()) {
+                selectOnMap.getFeatures().pop();
+              }
+        }
+
+        function showAll(){
+          selectedCar = null;
+          selectedCarOnMap = null;
+          selectedBox = null;
+          selectedBoxOnMap = null;
+          source.clear();
+          let itemList = carTable.rows().data();
+          for (var i = 0; i < itemList.length; i++) {
+              let temp = {
+                objectCode:itemList[i][0],
+                objectLatitude:itemList[i][1],
+                objectLongitude:itemList[i][2]
+              };
+
+              addCarToMap(temp);
+          }
+
+          itemList = boxTable.rows().data();
+          for (var i = 0; i < itemList.length; i++) {
+              let temp = {
+                objectCode:itemList[i][0],
+                objectLatitude:itemList[i][1],
+                objectLongitude:itemList[i][2]
+              };
+
+              addBoxToMap(temp);
+          }
+
+          while (selectOnMap.getFeatures()) {
+              selectOnMap.getFeatures().pop();
+            }
+
         }
 
         // 29.06901,40.2608250 for fiat bursa
@@ -515,6 +579,12 @@
         }
 
         function hookToCar(){
+          if (!isUserAuthenticated){
+            alert("Lütfen giriş yapınız.");
+            return;
+          }
+
+            cancelHook();
             isHookedToCar = true;
             let inputCode = $('#searchTxt').val();
             refreshIntervalId = setInterval(function(){
@@ -534,8 +604,8 @@
                 cancelHook();
                 return;
             }
+
             console.log(item);
-console.log(item);
             let mapItem = getMapFeatureById(item.objectCode);
             if (mapItem){ // update
                 mapItem.getGeometry().setCoordinates(ol.proj.transform([item.objectLongitude, item.objectLatitude], 'EPSG:4326', 'EPSG:3857'));
@@ -554,10 +624,10 @@ console.log(item);
             }
             else{ // add
                 addCarToDatatable(item);
+                addCarToMap(temp);
             }
 
-            selectCarFeatureById([item.objectCode]);
-            recenterMap(item.objectLongitude, item.objectLatitude);
+            selectCarFeatureById([item]);
         }
 
         function getCarByCode(carCode){
@@ -602,7 +672,8 @@ console.log(item);
            selectedBox = null;
            selectedBoxOnMap = null;
            emptyBoxDetailsToPane();
-
+           isUserAuthenticated = false;
+           deactiveUserInterfaces();
         }
 
         function signIn(){
@@ -645,11 +716,28 @@ console.log(item);
                             "lngCode" :"tr"
                         };
 
+                        isUserAuthenticated = true;
+                        activeUserInterfaces();
                         getCars();
                         getBoxes();
+
                     }
                 }
             });
+        }
+
+        function activeUserInterfaces(){
+          $("#objectListPane").show();
+          applyMargins();
+          $("#leftPaneOpener").show();
+          $('.mini-submenu-left').fadeOut();
+        }
+
+        function deactiveUserInterfaces(){
+          $('.mini-submenu-left').fadeIn();
+          $("#objectListPane").hide();
+          applyMargins();
+          $("#leftPaneOpener").hide();
         }
 
     </script>
@@ -693,7 +781,7 @@ console.log(item);
 <div class="navbar-offset"></div>
 
 
-<div id="custom_pan_panel" class="ol-control">
+<div id="custom_pan_panel" class="ol-control" style="display:none;">
     <button id="up" onclick="addInteraction()" class="vertical" type="button" title="Up"><span class="ol-compass"
                                                                                                style="transform: rotate(0deg);">&#913;</span>
     </button>
@@ -704,7 +792,7 @@ console.log(item);
 <div id="map">
 </div>
 <div class="row main-row">
-    <div class="col-sm-4 col-md-3 sidebar sidebar-left pull-left">
+    <div class="col-sm-4 col-md-3 sidebar sidebar-left pull-left"  id="objectListPane">
         <div class="panel-group sidebar-body" id="accordion-left">
             <!--  <div class="panel panel-default">
                 <div class="panel-heading">
@@ -770,7 +858,8 @@ console.log(item);
                             </div>
                         </div>
                         <button onclick="refreshLists()" type="zoom" class="btn btn-default">Refresh</button>
-                        <button onclick="cancelHook()" type="zoom" class="btn btn-default">Cancel Hook</button>
+                        <button onclick="cancelHook()" type="zoom" class="btn btn-default" style="display:none;">Cancel Hook</button>
+                        <button onclick="showAll()" type="zoom" class="btn btn-default">Show All</button>
                         <button onclick="recenterMap(29.06901,40.2608250)" type="zoom" class="btn btn-default">Recenter</button>
 
                     </div>
@@ -779,7 +868,7 @@ console.log(item);
         </div>
     </div>
     <div class="col-sm-4 col-md-6 mid"></div>
-    <div class="col-sm-4 col-md-3 sidebar sidebar-right pull-right">
+    <div class="col-sm-4 col-md-3 sidebar sidebar-right pull-right" style="display:none;">
         <div class="panel-group sidebar-body" id="accordion-right">
             <div class="panel panel-default">
                 <div class="panel-heading">
@@ -821,7 +910,7 @@ console.log(item);
         </div>
     </div>
 </div>
-<div class="mini-submenu mini-submenu-left pull-left">
+<div class="mini-submenu mini-submenu-left pull-left" id="leftPaneOpener">
     <i class="fa fa-list-alt"></i>
 </div>
 <div class="mini-submenu mini-submenu-right pull-right">
